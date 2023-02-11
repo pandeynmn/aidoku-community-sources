@@ -9,7 +9,6 @@ use mangastream_template::template::MangaStreamSource;
 fn get_instance() -> MangaStreamSource {
 	MangaStreamSource {
 		base_url: String::from("https://cosmicscans.com"),
-		manga_details_cover_src: "data-src",
 		..Default::default()
 	}
 }
@@ -35,7 +34,7 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
 }
 
 #[get_page_list]
-fn get_page_list(id: String) -> Result<Vec<Page>> {
+fn get_page_list(_manga_id: String, id: String) -> Result<Vec<Page>> {
 	get_instance().parse_page_list(id)
 }
 

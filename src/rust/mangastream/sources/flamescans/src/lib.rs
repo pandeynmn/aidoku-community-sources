@@ -9,6 +9,8 @@ use mangastream_template::template::MangaStreamSource;
 pub mod helper;
 fn get_instance() -> MangaStreamSource {
 	MangaStreamSource {
+		has_permanent_manga_url: true,
+		has_permanent_chapter_url: true,
 		tagid_mapping: get_tag_id,
 		base_url: get_base_url(),
 		traverse_pathname: "series",
@@ -42,7 +44,7 @@ fn get_chapter_list(id: String) -> Result<Vec<Chapter>> {
 }
 
 #[get_page_list]
-fn get_page_list(id: String) -> Result<Vec<Page>> {
+fn get_page_list(_manga_id: String, id: String) -> Result<Vec<Page>> {
 	get_instance().parse_page_list(id)
 }
 

@@ -54,6 +54,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "disasterscans"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
+
+[[package]]
 name = "fecomic"
 version = "0.1.0"
 dependencies = [
@@ -63,6 +71,14 @@ dependencies = [
 
 [[package]]
 name = "hentaicb"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
+
+[[package]]
+name = "hscans"
 version = "0.1.0"
 dependencies = [
  "aidoku",
@@ -115,7 +131,31 @@ dependencies = [
 ]
 
 [[package]]
+name = "mangascantrad"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
+
+[[package]]
+name = "mangasorigines"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
+
+[[package]]
 name = "mangatx"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
+
+[[package]]
+name = "manhuafast"
 version = "0.1.0"
 dependencies = [
  "aidoku",
@@ -131,7 +171,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "manhwaid"
+name = "manhuaus"
 version = "0.1.0"
 dependencies = [
  "aidoku",
@@ -143,6 +183,22 @@ name = "memory_units"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
+
+[[package]]
+name = "mmscans"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
+
+[[package]]
+name = "neoxscans"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
 
 [[package]]
 name = "nightcomic"
@@ -168,6 +224,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a1feb54ed693b93a84e14094943b84b7c4eae204c512b7ccb95ab0c66d278ad1"
 dependencies = [
  "proc-macro2",
+]
+
+[[package]]
+name = "reaperscansar"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
+]
+
+[[package]]
+name = "reaperscansfr"
+version = "0.1.0"
+dependencies = [
+ "aidoku",
+ "madara_template",
 ]
 
 [[package]]
@@ -208,14 +280,6 @@ dependencies = [
 
 [[package]]
 name = "toonily"
-version = "0.1.0"
-dependencies = [
- "aidoku",
- "madara_template",
-]
-
-[[package]]
-name = "twilightscans"
 version = "0.1.0"
 dependencies = [
  "aidoku",
