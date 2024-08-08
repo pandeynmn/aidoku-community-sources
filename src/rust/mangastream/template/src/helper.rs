@@ -7,6 +7,7 @@ use aidoku::{
 	std::{String, StringRef, Vec},
 	MangaStatus,
 };
+use core::ptr;
 
 use crate::template::MangaStreamSource;
 
@@ -396,7 +397,7 @@ fn generate_manga_url_to_postid_mapping(
 	unsafe {
 		// if the mapping was generated less than 10 minutes ago, use the cached mapping
 		if current_date() - CACHED_MAPPING_AT < 600.0 {
-			if let Some(mapping) = &CACHED_MANGA_URL_TO_POSTID_MAPPING {
+			if let Some(mapping) = &mut *ptr::addr_of_mut!(CACHED_MANGA_URL_TO_POSTID_MAPPING) {
 				return Ok(mapping.clone());
 			}
 		}

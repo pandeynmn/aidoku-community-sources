@@ -1,6 +1,7 @@
 #![no_std]
 extern crate alloc;
 mod decryptor;
+mod helper;
 mod parser;
 mod url;
 
@@ -15,7 +16,7 @@ use aidoku::{
 };
 use alloc::string::ToString;
 use decryptor::EncryptedString;
-use parser::{Element, JsonObj, JsonString, MangaListResponse, NodeArrValue, UuidString};
+use parser::{Element, JsonObj, JsonString, MangaListResponse, NodeArrValue, Part, UuidString};
 use url::{Url, CHAPTER_PATH, MANGA_PATH};
 
 #[get_manga_list]
@@ -33,7 +34,7 @@ fn get_manga_list(filters: Vec<Filter>, page: i32) -> Result<MangaPageResult> {
 
 #[get_manga_details]
 fn get_manga_details(manga_id: String) -> Result<Manga> {
-	let manga_page = Url::Manga(&manga_id).get_html()?;
+	let manga_page = Url::Manga { id: &manga_id }.get_html()?;
 
 	let cover = manga_page
 		.get_attr("img.lazyload", "data-src")
@@ -50,7 +51,7 @@ fn get_manga_details(manga_id: String) -> Result<Manga> {
 
 	let description = manga_page.get_text("p.intro");
 
-	let manga_url = Url::Manga(&manga_id).to_string();
+	let manga_url = Url::Manga { id: &manga_id }.to_string();
 
 	let categories = manga_page
 		.select("span.comicParticulars-left-theme-all.comicParticulars-tag > a")
@@ -82,26 +83,25 @@ fn get_manga_details(manga_id: String) -> Result<Manga> {
 
 #[get_chapter_list]
 fn get_chapter_list(manga_id: String) -> Result<Vec<Chapter>> {
-	let group_values = Url::ChapterList(&manga_id)
+	let group_values = Url::ChapterList { id: &manga_id }
 		.get_json()?
 		.as_object()?
 		.get_as_string("results")?
-		.decrypt()
+		.decrypt()?
 		.json()?
 		.as_object()?
 		.get("groups")
 		.as_object()?
 		.values();
-	let group_values_len = group_values.len();
 	let groups = group_values
 		.map(|group_value| {
 			let group_obj = group_value.as_object()?;
 
-			let title_prefix = if group_values_len > 1 {
-				let group_name = group_obj.get_as_string("name")?;
-				format!("{}：", group_name)
-			} else {
+			let group_name = group_obj.get_as_string("name")?;
+			let title_prefix = if group_name == "默認" {
 				String::new()
+			} else {
+				format!("{}：", group_name)
 			};
 
 			group_obj
@@ -125,37 +125,43 @@ fn get_chapter_list(manga_id: String) -> Result<Vec<Chapter>> {
 
 	let mut groups_iter = groups.iter();
 	let mut sorted_chapters = groups_iter.next().cloned().unwrap_or_default();
-	groups_iter.for_each(|unsorted_chapters| {
+	for unsorted_chapters in groups_iter {
 		let mut index = 0;
-		unsorted_chapters.iter().for_each(|unsorted_chapter| {
-			while index < sorted_chapters.len() && unsorted_chapter.2 > sorted_chapters[index].2 {
+		for unsorted_chapter in unsorted_chapters {
+			while index < sorted_chapters.len() && unsorted_chapter.2? > sorted_chapters[index].2? {
 				index += 1;
 			}
 			sorted_chapters.insert(index, unsorted_chapter.clone());
 			index += 1;
-		});
-	});
+		}
+	}
 
 	let chapters = sorted_chapters
 		.iter()
-		.enumerate()
-		.map(|(index, (chapter_id, title, date_updated))| {
-			let chapter_num = (index + 1) as f32;
+		.map(|(chapter_id, title, res_date_updated)| {
+			let part = title.parse::<Part>()?;
 
-			let chapter_url = Url::Chapter(&manga_id, chapter_id).to_string();
+			let date_updated = (*res_date_updated)?;
 
-			Chapter {
+			let chapter_url = Url::Chapter {
+				manga_id: &manga_id,
+				chapter_id,
+			}
+			.to_string();
+
+			Ok(Chapter {
 				id: chapter_id.clone(),
-				title: title.clone(),
-				chapter: chapter_num,
-				date_updated: *date_updated,
+				title: part.title,
+				volume: part.volume,
+				chapter: part.chapter,
+				date_updated,
 				url: chapter_url,
 				lang: "zh".to_string(),
 				..Default::default()
-			}
+			})
 		})
 		.rev()
-		.collect::<Vec<_>>();
+		.collect::<Result<_>>()?;
 
 	Ok(chapters)
 }
@@ -164,12 +170,15 @@ fn get_chapter_list(manga_id: String) -> Result<Vec<Chapter>> {
 fn get_page_list(manga_id: String, chapter_id: String) -> Result<Vec<Page>> {
 	let mut pages = Vec::<Page>::new();
 
-	let page_arr = Url::Chapter(&manga_id, &chapter_id)
-		.get_html()?
-		.get_attr("div.imageData", "contentkey")
-		.decrypt()
-		.json()?
-		.as_array()?;
+	let page_arr = Url::Chapter {
+		manga_id: &manga_id,
+		chapter_id: &chapter_id,
+	}
+	.get_html()?
+	.get_attr("div.imageData", "contentkey")
+	.decrypt()?
+	.json()?
+	.as_array()?;
 
 	let image_format = defaults_get("imageFormat").and_then(|v| v.as_string().map(|v| v.read()))?;
 
